@@ -25,14 +25,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.gson.Gson;
-import com.imaginarycode.minecraft.redisbungee.RedisBungee;
 
 import fr.Alphart.BAT.BAT;
 import fr.Alphart.BAT.Modules.BATCommand;
 import fr.Alphart.BAT.Modules.IModule;
 import fr.Alphart.BAT.Modules.ModuleConfiguration;
-import fr.Alphart.BAT.Utils.BPInterfaceFactory;
-import fr.Alphart.BAT.Utils.BPInterfaceFactory.PermissionProvider;
 import fr.Alphart.BAT.Utils.Metrics;
 import fr.Alphart.BAT.Utils.Metrics.Graph;
 import fr.Alphart.BAT.Utils.EnhancedDateFormat;
@@ -94,7 +91,6 @@ public class Core implements IModule, Listener {
 	private final String name = "core";
 	private List<BATCommand> cmds;
 	private Gson gson = new Gson();
-	private static PermissionProvider bungeePerms;
 	public static EnhancedDateFormat defaultDF = new EnhancedDateFormat(false);
 
 	@Override
@@ -130,11 +126,7 @@ public class Core implements IModule, Listener {
 		// Register commands
 		cmds = new ArrayList<>();
 		cmds.add(new CoreCommand(this)); // Most of the job is done in the constructor of CoreCommand
-		
-		// Try to hook into BungeePerms
-		if(ProxyServer.getInstance().getPluginManager().getPlugin("BungeePerms") != null){
-			bungeePerms = BPInterfaceFactory.getBPInterface(ProxyServer.getInstance().getPluginManager().getPlugin("BungeePerms"));
-		}
+
 		
 		// Update the date format (if translation has been changed)
 		defaultDF = new EnhancedDateFormat(BAT.getInstance().getConfiguration().isLitteralDate());
@@ -250,18 +242,6 @@ public class Core implements IModule, Listener {
 	}
 
 	public static String getPlayerIP(final String pName) {
-	        if (BAT.getInstance().getRedis().isRedisEnabled()) {
-	            try {
-	            	final UUID pUUID = RedisBungee.getApi().getUuidFromName(pName, true);
-	            	if (pUUID != null && RedisBungee.getApi().isPlayerOnline(pUUID))
-	            	    return RedisBungee.getApi().getPlayerIp(pUUID).getHostAddress();
-	            } catch (Exception exp) {
-	        	exp.printStackTrace();
-	            }
-	        } else {
-	            	final ProxiedPlayer player = ProxyServer.getInstance().getPlayer(pName);
-	            	if (player != null) return Utils.getPlayerIP(player);
-	        }
 
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
@@ -286,18 +266,7 @@ public class Core implements IModule, Listener {
 	 * @return permission in a collection of strings
 	 */
 	public static Collection<String> getCommandSenderPermission(final CommandSender sender){
-		if(bungeePerms != null){
-			if(sender.equals(ProxyServer.getInstance().getConsole())){
-				return sender.getPermissions();	
-			}
-			try{
-				return bungeePerms.getPermissions(sender);
-			}catch(final NullPointerException e){
-				return new ArrayList<String>();
-			}
-		}else{
-			return sender.getPermissions();	
-		}
+		return sender.getPermissions();
 	}
 	
 	public void initMetrics() throws IOException{

@@ -36,7 +36,6 @@ import fr.Alphart.BAT.I18n.I18n;
 import fr.Alphart.BAT.Modules.ModulesManager;
 import fr.Alphart.BAT.Modules.Core.Core;
 import fr.Alphart.BAT.Utils.CallbackUtils.Callback;
-import fr.Alphart.BAT.Utils.RedisUtils;
 import fr.Alphart.BAT.database.DataSourceHandler;
 
 /**
@@ -52,7 +51,6 @@ public class BAT extends Plugin {
 	private Configuration config;
 	private static String prefix;
 	private ModulesManager modules;
-	private RedisUtils redis;
 
 	@Override
 	public void onEnable() {
@@ -111,7 +109,6 @@ public class BAT extends Plugin {
 				if (dbState) {
 				    getLogger().config("Connection to the database established");
 					// Try enabling redis support.
-					redis = new RedisUtils(config.isRedisSupport());
 			        modules = new ModulesManager();
 					modules.loadModules();
 				} else {
@@ -144,9 +141,6 @@ public class BAT extends Plugin {
 
 	@Override
 	public void onDisable() {
-	    if(redis != null){
-	      getRedis().destroy();
-	    }
         modules.unloadModules();
 		instance = null;
 	}
@@ -260,9 +254,6 @@ public class BAT extends Plugin {
 	 */
 	public static void broadcast(final String message, final String perm) {
 		noRedisBroadcast(message, perm);
-		if(BAT.getInstance().getRedis().isRedisEnabled()){
-			BAT.getInstance().getRedis().sendBroadcast(perm, message);
-		}
 	}
 	
 	public static void noRedisBroadcast(final String message, final String perm) {
@@ -300,9 +291,6 @@ public class BAT extends Plugin {
 		return dsHandler;
 	}
 
-	public RedisUtils getRedis() {
-	    return redis;
-	}
 
 	/**
 	 * Kick a player from the proxy for a specified reason

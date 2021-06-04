@@ -1,6 +1,6 @@
 package fr.Alphart.BAT.Modules;
 
-import static fr.Alphart.BAT.I18n.I18n._;
+import static fr.Alphart.BAT.I18n.I18n.formatWithColor;
 import static fr.Alphart.BAT.I18n.I18n.__;
 
 import java.lang.annotation.ElementType;
@@ -14,6 +14,7 @@ import java.util.MissingResourceException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import fr.Alphart.BAT.I18n.I18n;
 import lombok.Setter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
@@ -23,7 +24,6 @@ import net.md_5.bungee.api.plugin.TabExecutor;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.imaginarycode.minecraft.redisbungee.RedisBungee;
 
 import fr.Alphart.BAT.BAT;
 import fr.Alphart.BAT.Modules.Core.CommandQueue;
@@ -115,14 +115,14 @@ public abstract class BATCommand extends net.md_5.bungee.api.plugin.Command impl
 				}else{
 					sender.sendMessage(__("invalidArgsUsage", new String[] { "&e/" + getFormatUsage() }));
 				}
-			} else if (_("noPerm").equals(exception.getMessage())) {
+			} else if (I18n.formatWithColor("noPerm").equals(exception.getMessage())) {
 				sender.sendMessage(__("noPerm"));
 			} else {
 				sender.sendMessage(__("invalidArgs", new String[] { exception.getMessage() }));
 			}
 		}
 		else if(exception instanceof UUIDNotFoundException){
-			sender.sendMessage(__("invalidArgs", new String[] { _("cannotGetUUID", new String[] { ((UUIDNotFoundException)exception).getInvolvedPlayer() }) }));
+			sender.sendMessage(__("invalidArgs", new String[] { formatWithColor("cannotGetUUID", new String[] { ((UUIDNotFoundException)exception).getInvolvedPlayer() }) }));
 		}
 		else if(exception instanceof MissingResourceException){
 			sender.sendMessage(BAT.__("&cAn error occured with the translation. Key involved : &a" + ((MissingResourceException)exception).getKey()));
@@ -208,17 +208,7 @@ public abstract class BATCommand extends net.md_5.bungee.api.plugin.Command impl
 		}
 		final String playerToCheck = args[args.length - 1];
 		if (playerToCheck.length() > 0) {
-		    	if (BAT.getInstance().getRedis().isRedisEnabled()) {
-		    	    	for (final String player : RedisBungee.getApi().getHumanPlayersOnline()) {
-		    	    	    	if (player
-		    	    	    		.substring(
-		    	    	    				0,
-		    	    	    				(playerToCheck.length() < player.length()) ? playerToCheck.length() : player
-		    	    	    					.length()).equalsIgnoreCase(playerToCheck)) {
-		    	    	    		result.add(player);
-		    	    		}
-		    	    	}
-		    	} else {
+
 		    	    	for (final ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
 					if (player
 							.getName()
@@ -229,7 +219,7 @@ public abstract class BATCommand extends net.md_5.bungee.api.plugin.Command impl
 						result.add(player.getName());
 					}
 				}
-		    	}
+
 		}
 		return result;
 	}
